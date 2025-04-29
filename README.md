@@ -1,15 +1,27 @@
-# Recap - Collaborative Update Tracking System
+# Recap - Collaborative Recaps tool for all companies sizes
 
 Recap is a collaborative update tracking system designed to help teams share notes and stay organized. This repository contains the frontend application built with React, TypeScript, and Vite.
 
+## Note :
+I only exposed this repo for Interviewing purposes only, I'm launching this product soon, the backend repo is still private.
 ## Features
 
 - **Team Management**: Create, update, and delete teams with member management
-- **Update Tracking**: Write, share, and organize notes across team members
+- **Roles & Permissions Management**: Create, update, and delete roles and permissions to be used on team members
+- **Recaps**: Write, consult, and organize Recaps across team members
 - **Secure Authentication**: JWT-based authentication with role-based access control
 - **Email Verification**: Secure account creation with email verification
-- **Interactive API Docs**: Built-in API documentation powered by RapiDoc
+- **Interactive API Docs**: Built-in API documentation powered by RapiDoc (In backend Repo only)
 
+## Coming Soon
+- Cross team collaboration tools
+- Ability for members to interact with recaps
+- ClickUp & Trello Integrations
+- AI recap refinement tools ( quickplan.blueblood.tech integration )
+
+Pre-Beta Screenshot (has some missing data)
+[image](https://github.com/user-attachments/assets/386642b9-a615-4870-b84a-420c0735a6d7)
+)
 ## Tech Stack
 
 ### Frontend

@@ -13,17 +13,22 @@ export interface RecapApiModel {
   updatedAt: string;
 }
 
-export async function fetchRecapsApi(params?: { userId?: string; teamId?: string }): Promise<RecapApiModel[]> {
-  const res = await api.get("/recaps", { params });
+export async function fetchRecapsApi(teamId: string): Promise<RecapApiModel[]> {
+  const res = await api.get("/recaps", { params: { teamId } });
   return res.data;
 }
 
-export async function createRecapApi(data: Partial<RecapApiModel>): Promise<RecapApiModel> {
+export async function createRecapApi(
+  data: Partial<RecapApiModel>
+): Promise<RecapApiModel> {
   const res = await api.post("/recaps", data);
   return res.data;
 }
 
-export async function updateRecapApi(id: string, data: Partial<RecapApiModel>): Promise<RecapApiModel> {
+export async function updateRecapApi(
+  id: string,
+  data: Partial<RecapApiModel>
+): Promise<RecapApiModel> {
   const res = await api.put(`/recaps/${id}`, data);
   return res.data;
 }
@@ -31,4 +36,3 @@ export async function updateRecapApi(id: string, data: Partial<RecapApiModel>): 
 export async function deleteRecapApi(id: string): Promise<void> {
   await api.delete(`/api/recaps/${id}`);
 }
-

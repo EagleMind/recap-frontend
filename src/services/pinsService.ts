@@ -2,8 +2,8 @@ import { Recap } from "@/types/recap";
 import { api } from "./api";
 
 export const pinsService = {
-  async fetchPins(): Promise<Recap[]> {
-    const res = await api.get("/pins");
+  async fetchPins(teamId?: string): Promise<Recap[]> {
+    const res = await api.get("/pins", { params: teamId ? { teamId } : {} });
     return res.data;
   },
 

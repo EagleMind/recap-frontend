@@ -2,7 +2,11 @@ import * as React from "react";
 import type { Recap } from "@/types/recap";
 import { useRecapsStore } from "@/store/recapsStore";
 import { useTeamStore } from "@/store/teamStore";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { RecapDeleteConfirm } from "./RecapDeleteConfirm";
 import { Plus, ChevronUp, ChevronDown } from "lucide-react";
@@ -11,7 +15,12 @@ import moment from "moment";
 import { MiniCalendar } from "./MiniCalendar";
 import { ActivityFeed } from "./ActivityFeed";
 import { PinnedRecapsPanel } from "./PinnedRecapsPanel";
-import { Dialog, DialogContent, DialogTitle, DialogOverlay } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogOverlay,
+} from "@/components/ui/dialog";
 import { VisuallyHidden } from "./VisuallyHidden";
 import { RecapEditPanel } from "./RecapEditPanel";
 import RecapCard from "./recapCard";
@@ -19,11 +28,13 @@ import { PinSidebarToggle } from "./PinSidebarToggle";
 import { CalendarSidebarToggle } from "./CalendarSidebarToggle";
 
 function formatDate(dateStr: string) {
-  return moment(dateStr).format('LLL');
+  return moment(dateStr).format("LLL");
 }
 
 export default function RecapsPage() {
-  const [openSections, setOpenSections] = React.useState<Record<string, boolean>>({});
+  const [openSections, setOpenSections] = React.useState<
+    Record<string, boolean>
+  >({});
   const [createOpen, setCreateOpen] = React.useState(false);
   const [editOpen, setEditOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
@@ -31,14 +42,20 @@ export default function RecapsPage() {
   const [deleteRecap, setDeleteRecap] = React.useState<any | null>(null);
   const [selectedRecap, setSelectedRecap] = React.useState<any | null>(null);
 
-  const { recapsByDate, fetchRecaps, createRecap, updateRecap } = useRecapsStore();
-  const members = useTeamStore(state => state.members);
-  const fetchMembers = useTeamStore(state => state.fetchMembers);
-  const membersLoading = useTeamStore(state => state.isLoading);
+  const { recapsByDate, fetchRecaps, createRecap, updateRecap } =
+    useRecapsStore();
+  const members = useTeamStore((state) => state.members);
+  const fetchMembers = useTeamStore((state) => state.fetchMembers);
+  const membersLoading = useTeamStore((state) => state.isLoading);
+  const activeTeam = useTeamStore((state) => state.activeTeam);
 
   // Fetch members when dialog opens
   React.useEffect(() => {
-    if ((createOpen || !!selectedRecap) && members.length === 0 && !membersLoading) {
+    if (
+      (createOpen || !!selectedRecap) &&
+      members.length === 0 &&
+      !membersLoading
+    ) {
       fetchMembers();
     }
   }, [createOpen, selectedRecap, members.length, membersLoading, fetchMembers]);
@@ -50,12 +67,27 @@ export default function RecapsPage() {
   // Mock activity feed for demo
 
   React.useEffect(() => {
-    fetchRecaps();
+    if (activeTeam) {
+      fetchMembers();
+      fetchRecaps(activeTeam.teamId);
+    }
+  }, [activeTeam, fetchMembers, fetchRecaps]);
+
+  React.useEffect(() => {
+    if (activeTeam) {
+      fetchRecaps(activeTeam.teamId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
   // Sort dates descending
-  const sortedDates = React.useMemo(() => Object.keys(recapsByDate).sort((a, b) => b.localeCompare(a)), [recapsByDate]);
-  const allRecaps = React.useMemo(() => Object.values(recapsByDate).flat(), [recapsByDate]);
+  const sortedDates = React.useMemo(
+    () => Object.keys(recapsByDate).sort((a, b) => b.localeCompare(a)),
+    [recapsByDate]
+  );
+  const allRecaps = React.useMemo(
+    () => Object.values(recapsByDate).flat(),
+    [recapsByDate]
+  );
   const availableDates = sortedDates;
 
   // Memoized filtered recaps by selectedDate
@@ -67,18 +99,27 @@ export default function RecapsPage() {
   }, [selectedDate, sortedDates, recapsByDate]);
 
   // Activity feed: show 'created' or 'updated' based on timestamps
-  const activities = React.useMemo(() =>
-    allRecaps.map(r => {
-      const isCreated = r.createdAt === r.updatedAt;
-      return {
-        id: r._id,
-        type: isCreated ? "created" : "updated",
-        user: isCreated ? (r as any).createdBy ?? r.assignedTo ?? "Unknown" : r.assignedTo ?? (r as any).createdBy ?? "Unknown",
-        recapTitle: r.title,
-        date: (isCreated ? r.createdAt : r.updatedAt) || r.createdAt || r.updatedAt || "",
-        message: r.description,
-      };
-    }), [allRecaps]);
+  const activities = React.useMemo(
+    () =>
+      allRecaps.map((r) => {
+        const isCreated = r.createdAt === r.updatedAt;
+        return {
+          id: r._id,
+          type: isCreated ? "created" : "updated",
+          user: isCreated
+            ? (r as any).createdBy ?? r.assignedTo ?? "Unknown"
+            : r.assignedTo ?? (r as any).createdBy ?? "Unknown",
+          recapTitle: r.title,
+          date:
+            (isCreated ? r.createdAt : r.updatedAt) ||
+            r.createdAt ||
+            r.updatedAt ||
+            "",
+          message: r.description,
+        };
+      }),
+    [allRecaps]
+  );
 
   const handleSelectRecap = (recap: any) => setSelectedRecap(recap);
 
@@ -93,7 +134,11 @@ export default function RecapsPage() {
     <div className="flex h-[calc(100vh-64px)] w-full">
       {/* Left sidebar: MiniCalendar + ActivityFeed */}
       <aside className="hidden md:flex flex-col min-w-[19rem] border-r border-border bg-background py-6 gap-4">
-        <MiniCalendar selectedDate={selectedDate} onSelectDate={handleSelectDate} availableDates={availableDates} />
+        <MiniCalendar
+          selectedDate={selectedDate}
+          onSelectDate={handleSelectDate}
+          availableDates={availableDates}
+        />
         <ActivityFeed activities={activities} />
       </aside>
 
@@ -113,14 +158,20 @@ export default function RecapsPage() {
               <Plus className="w-4 h-4" />
               Add Recap
             </Button>
-            <CalendarSidebarToggle open={calendarSidebarOpen} onToggle={() => {
-              setCalendarSidebarOpen((v) => !v);
-              if (!calendarSidebarOpen) setPinSidebarOpen(false);
-            }} />
-            <PinSidebarToggle open={pinSidebarOpen} onToggle={() => {
-              setPinSidebarOpen((v) => !v);
-              if (!pinSidebarOpen) setCalendarSidebarOpen(false);
-            }} />
+            <CalendarSidebarToggle
+              open={calendarSidebarOpen}
+              onToggle={() => {
+                setCalendarSidebarOpen((v) => !v);
+                if (!calendarSidebarOpen) setPinSidebarOpen(false);
+              }}
+            />
+            <PinSidebarToggle
+              open={pinSidebarOpen}
+              onToggle={() => {
+                setPinSidebarOpen((v) => !v);
+                if (!pinSidebarOpen) setCalendarSidebarOpen(false);
+              }}
+            />
           </div>
 
           {/* Add Recap Dialog */}
@@ -130,7 +181,15 @@ export default function RecapsPage() {
               <DialogTitle className="px-6 pt-6 pb-2">Add Recap</DialogTitle>
               <RecapEditPanel
                 mode="create"
-                recap={{ title: '', description: '', assignedTo: '', team: '', pinned: null } as any}
+                recap={
+                  {
+                    title: "",
+                    description: "",
+                    assignedTo: "",
+                    team: "",
+                    pinned: null,
+                  } as any
+                }
                 members={members}
                 membersLoading={membersLoading}
                 onSave={async (recap) => {
@@ -143,22 +202,31 @@ export default function RecapsPage() {
           </Dialog>
 
           {/* View/Edit Recap Dialog */}
-          <Dialog open={!!selectedRecap} onOpenChange={open => { if (!open) setSelectedRecap(null); }}>
+          <Dialog
+            open={!!selectedRecap}
+            onOpenChange={(open) => {
+              if (!open) setSelectedRecap(null);
+            }}
+          >
             <DialogOverlay className=" backdrop-blur-sm transition-opacity duration-300" />
             <DialogContent className="w-[80vw] h-[80vh] p-0">
               <DialogTitle className="px-6 pt-6 pb-2">
-                {selectedRecap?._mode === 'edit' ? 'Edit Recap' : 'View Recap'}
+                {selectedRecap?._mode === "edit" ? "Edit Recap" : "View Recap"}
               </DialogTitle>
               {selectedRecap && (
                 <RecapEditPanel
-                  mode={selectedRecap._mode || 'view'}
+                  mode={selectedRecap._mode || "view"}
                   recap={selectedRecap}
                   members={members}
                   membersLoading={membersLoading}
-                  onSave={selectedRecap._mode === 'edit' ? async (recap) => {
-                    await updateRecap(recap._id, recap);
-                    setSelectedRecap(null);
-                  } : undefined}
+                  onSave={
+                    selectedRecap._mode === "edit"
+                      ? async (recap) => {
+                          await updateRecap(recap._id, recap);
+                          setSelectedRecap(null);
+                        }
+                      : undefined
+                  }
                   onCancel={() => setSelectedRecap(null)}
                 />
               )}
@@ -168,7 +236,7 @@ export default function RecapsPage() {
             const recaps: Recap[] = recapsByDate[date];
             const isOpen = openSections[date] !== false;
             const handleToggle = () => {
-              setOpenSections(prev => ({ ...prev, [date]: !isOpen }));
+              setOpenSections((prev) => ({ ...prev, [date]: !isOpen }));
             };
             return (
               <div key={date} className="mb-8">
@@ -181,24 +249,35 @@ export default function RecapsPage() {
                           {recaps.length} recaps
                         </span>
                       </span>
-                      <span className="ml-2">{isOpen ? <ChevronDown /> : <ChevronUp></ChevronUp>}</span>
+                      <span className="ml-2">
+                        {isOpen ? <ChevronDown /> : <ChevronUp></ChevronUp>}
+                      </span>
                     </button>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <div className={recaps.length > 3 ? "max-h-96 overflow-y-auto pr-2" : undefined}>
+                    <div
+                      className={
+                        recaps.length > 3
+                          ? "max-h-96 overflow-y-auto pr-2"
+                          : undefined
+                      }
+                    >
                       {recaps.map((recap: Recap) => (
                         <RecapCard
                           recap={recap}
                           key={recap._id}
                           onView={() => {
-                            setSelectedRecap({ ...recap, _mode: 'view' });
+                            setSelectedRecap({ ...recap, _mode: "view" });
                             setEditOpen(false);
                           }}
                           onEdit={() => {
-                            setSelectedRecap({ ...recap, _mode: 'edit' });
+                            setSelectedRecap({ ...recap, _mode: "edit" });
                             setEditOpen(true);
                           }}
-                          onDelete={() => { setDeleteRecap(recap); setDeleteOpen(true); }}
+                          onDelete={() => {
+                            setDeleteRecap(recap);
+                            setDeleteOpen(true);
+                          }}
                         />
                       ))}
                     </div>
@@ -212,7 +291,7 @@ export default function RecapsPage() {
         {deleteOpen && deleteRecap && (
           <RecapDeleteConfirm
             open={deleteOpen}
-            onOpenChange={open => {
+            onOpenChange={(open) => {
               if (!open) {
                 setDeleteOpen(false);
                 setDeleteRecap(null);
@@ -229,40 +308,62 @@ export default function RecapsPage() {
         <PinnedRecapsPanel onSelect={handleSelectRecap} />
       </aside>
       {/* Floating Calendar Sidebar Overlay (all screens) */}
-      <div className={
-        calendarSidebarOpen
-          ? "fixed inset-0 z-50 flex justify-end pointer-events-auto"
-          : "fixed inset-0 z-50 flex justify-end pointer-events-none"
-      } aria-hidden={!calendarSidebarOpen}>
+      <div
+        className={
+          calendarSidebarOpen
+            ? "fixed inset-0 z-50 flex justify-end pointer-events-auto"
+            : "fixed inset-0 z-50 flex justify-end pointer-events-none"
+        }
+        aria-hidden={!calendarSidebarOpen}
+      >
         {/* Backdrop */}
         <div
-          className={`fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${calendarSidebarOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
+            calendarSidebarOpen ? "opacity-100" : "opacity-0"
+          }`}
           onClick={() => setCalendarSidebarOpen(false)}
           aria-label="Close calendar sidebar"
         />
         {/* Sidebar */}
         <aside
-          className={`relative w-80 max-w-full h-full bg-background border-l border-border shadow-2xl p-4 overflow-y-auto transform transition-all duration-300 ease-in-out ${calendarSidebarOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}
+          className={`relative w-80 max-w-full h-full bg-background border-l border-border shadow-2xl p-4 overflow-y-auto transform transition-all duration-300 ease-in-out ${
+            calendarSidebarOpen
+              ? "translate-x-0 opacity-100"
+              : "translate-x-full opacity-0"
+          }`}
           tabIndex={-1}
         >
-          <MiniCalendar selectedDate={selectedDate} onSelectDate={handleSelectDate} availableDates={availableDates} />
+          <MiniCalendar
+            selectedDate={selectedDate}
+            onSelectDate={handleSelectDate}
+            availableDates={availableDates}
+          />
         </aside>
       </div>
       {/* Floating Pin Sidebar Overlay (all screens) */}
-      <div className={
-        pinSidebarOpen
-          ? "fixed inset-0 z-50 flex justify-end pointer-events-auto"
-          : "fixed inset-0 z-50 flex justify-end pointer-events-none"
-      } aria-hidden={!pinSidebarOpen}>
+      <div
+        className={
+          pinSidebarOpen
+            ? "fixed inset-0 z-50 flex justify-end pointer-events-auto"
+            : "fixed inset-0 z-50 flex justify-end pointer-events-none"
+        }
+        aria-hidden={!pinSidebarOpen}
+      >
         {/* Backdrop */}
         <div
-          className={`fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${pinSidebarOpen ? 'opacity-100' : 'opacity-0'}`}
+          className={`fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity duration-300 ${
+            pinSidebarOpen ? "opacity-100" : "opacity-0"
+          }`}
           onClick={() => setPinSidebarOpen(false)}
           aria-label="Close pinned recaps sidebar"
         />
         {/* Sidebar */}
         <aside
-          className={`relative w-80 max-w-full h-full bg-background border-l border-border shadow-2xl p-4 overflow-y-auto transform transition-all duration-300 ease-in-out ${pinSidebarOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}`}
+          className={`relative w-80 max-w-full h-full bg-background border-l border-border shadow-2xl p-4 overflow-y-auto transform transition-all duration-300 ease-in-out ${
+            pinSidebarOpen
+              ? "translate-x-0 opacity-100"
+              : "translate-x-full opacity-0"
+          }`}
           tabIndex={-1}
         >
           <PinnedRecapsPanel onSelect={handleSelectRecap} />
@@ -270,11 +371,21 @@ export default function RecapsPage() {
       </div>
 
       {/* Recap Edit Dialog */}
-      <Dialog open={!!editRecap} onOpenChange={open => { if (!open) setEditRecap(null); }}>
+      <Dialog
+        open={!!editRecap}
+        onOpenChange={(open) => {
+          if (!open) setEditRecap(null);
+        }}
+      >
         <DialogOverlay className="backdrop-blur-sm bg-black/30" />
-        <DialogContent className="w-[80vw] h-[80vh] p-0" aria-describedby="recap-edit-desc">
+        <DialogContent
+          className="w-[80vw] h-[80vh] p-0"
+          aria-describedby="recap-edit-desc"
+        >
           <DialogTitle className="sr-only">Edit Recap</DialogTitle>
-          <VisuallyHidden><span id="recap-edit-desc">Edit the selected recap.</span></VisuallyHidden>
+          <VisuallyHidden>
+            <span id="recap-edit-desc">Edit the selected recap.</span>
+          </VisuallyHidden>
           {editRecap && (
             <RecapEditPanel
               recap={editRecap}
@@ -292,7 +403,7 @@ export default function RecapsPage() {
       {deleteOpen && deleteRecap && (
         <RecapDeleteConfirm
           open={deleteOpen}
-          onOpenChange={open => {
+          onOpenChange={(open) => {
             if (!open) {
               setDeleteOpen(false);
               setDeleteRecap(null);

@@ -3,12 +3,13 @@ import type { Recap } from "@/types/recap";
 import { api } from "@/services/api";
 import { showSuccess, showError } from "@/lib/toast";
 import { pinsService } from "@/services/pinsService";
+import { useTeamStore } from "@/store/teamStore";
 
 interface PinsState {
   pinnedRecaps: Recap[];
   loading: boolean;
   error: string | null;
-  fetchPins: () => Promise<void>;
+  fetchPins: (teamId?: string) => Promise<void>;
   pinRecap: (recapId: string) => Promise<void>;
   unpinRecap: (recapId: string) => Promise<void>;
   reorderPins: (recapIds: string[]) => Promise<void>;
@@ -19,11 +20,11 @@ export const usePinsStore = create<PinsState>((set, get) => ({
   loading: false,
   error: null,
 
-  fetchPins: async () => {
+  fetchPins: async (teamId?: string) => {
     set({ loading: true, error: null });
     try {
-      const res = await api.get<Recap[]>("/pins");
-      set({ pinnedRecaps: res.data, loading: false });
+      const res = await pinsService.fetchPins(teamId);
+      set({ pinnedRecaps: res, loading: false });
     } catch (error: any) {
       set({ error: error.message, loading: false });
       showError(error.message || "Failed to load pins.");

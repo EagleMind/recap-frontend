@@ -12,7 +12,12 @@ import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { teamService } from "@/services/teamService";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { MemberEditForm } from "./MemberEditForm";
 
 export function MembersPage() {
@@ -33,8 +38,17 @@ export function MembersPage() {
   React.useEffect(() => {
     fetchMembers();
   }, []);
+
+  React.useEffect(() => {
+    if (activeTeam) {
+      fetchMembers();
+    }
+  }, [activeTeam, fetchMembers]);
+
   const [editModalOpen, setEditModalOpen] = React.useState(false);
-  const [memberToEdit, setMemberToEdit] = React.useState<TeamMember | null>(null);
+  const [memberToEdit, setMemberToEdit] = React.useState<TeamMember | null>(
+    null
+  );
 
   const handleEdit = (member: TeamMember) => {
     setMemberToEdit(member);
@@ -53,7 +67,9 @@ export function MembersPage() {
   }
 
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
-  const [memberToDelete, setMemberToDelete] = React.useState<TeamMember | null>(null);
+  const [memberToDelete, setMemberToDelete] = React.useState<TeamMember | null>(
+    null
+  );
 
   const handleRemove = (member: TeamMember) => {
     setMemberToDelete(member);
@@ -68,8 +84,15 @@ export function MembersPage() {
     fetchMembers();
   };
 
-
-  const handleInviteMember = async ({ name, email, roleId }: { name: string; email: string; roleId?: string }) => {
+  const handleInviteMember = async ({
+    name,
+    email,
+    roleId,
+  }: {
+    name: string;
+    email: string;
+    roleId?: string;
+  }) => {
     if (!activeTeam) throw new Error("No active team");
     await teamService.invite(activeTeam.teamId, { name, email, roleId });
     fetchMembers();
@@ -81,14 +104,11 @@ export function MembersPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Team Members</h1>
         <span className="flex items-center">
-          <Button
-            onClick={() => setAddOpen(true)}
-          >
+          <Button onClick={() => setAddOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             <span>Add Member</span>
           </Button>
         </span>
-
       </div>
 
       <AddMemberModal
@@ -97,7 +117,9 @@ export function MembersPage() {
         onAdd={handleInviteMember}
       />
       {error && <div className="mb-4 text-red-600">{error}</div>}
-      {teamMemberError && <div className="mb-4 text-red-600">{teamMemberError}</div>}
+      {teamMemberError && (
+        <div className="mb-4 text-red-600">{teamMemberError}</div>
+      )}
       <ConfirmDeleteModal
         open={deleteModalOpen}
         onOpenChange={(open) => {
@@ -135,4 +157,3 @@ export function MembersPage() {
     </div>
   );
 }
-

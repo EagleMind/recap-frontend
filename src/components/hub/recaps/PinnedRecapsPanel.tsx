@@ -20,6 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { Recap } from "@/types/recap";
+import { useTeamStore } from "@/store/teamStore";
 
 interface PinnedRecapsPanelProps {
   onSelect: (recap: Recap) => void;
@@ -79,11 +80,14 @@ function SortableItem({
 
 export function PinnedRecapsPanel({ onSelect }: PinnedRecapsPanelProps) {
   const { pinnedRecaps, fetchPins, unpinRecap, reorderPins } = usePinsStore();
+  const activeTeam = useTeamStore((state) => state.activeTeam);
   const [items, setItems] = React.useState<string[]>([]);
 
-  useEffect(() => {
-    fetchPins();
-  }, [fetchPins]);
+  React.useEffect(() => {
+    if (activeTeam) {
+      fetchPins(activeTeam.teamId);
+    }
+  }, [activeTeam, fetchPins]);
 
   useEffect(() => {
     setItems(pinnedRecaps.map((r) => r._id));

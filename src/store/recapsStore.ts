@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { fetchRecapsApi, RecapApiModel } from "@/services/recapsService";
+import { useTeamStore } from "@/store/teamStore";
 
 import type { Recap } from "@/types/recap";
 import { showSuccess, showError } from "@/lib/toast";
@@ -9,7 +10,7 @@ export interface RecapsStoreState {
   loading: boolean;
   error?: string;
   success?: string;
-  fetchRecaps: () => Promise<void>;
+  fetchRecaps: (teamId: string) => Promise<void>;
   createRecap: (data: Partial<Recap>) => Promise<void>;
   updateRecap: (id: string, data: Partial<Recap>) => Promise<void>;
   deleteRecap: (id: string) => Promise<void>;
@@ -31,27 +32,40 @@ function toRecap(r: RecapApiModel): Recap {
   return {
     _id: r._id,
     title: r.title,
-    assignedTo: typeof r.assignedTo === "object" && r.assignedTo !== null ? r.assignedTo.name : String(r.assignedTo),
+    assignedTo:
+      typeof r.assignedTo === "object" && r.assignedTo !== null
+        ? r.assignedTo.name
+        : String(r.assignedTo),
     description: r.description,
     date,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
-    createdBy: typeof r.createdBy === "object" && r.createdBy !== null ? r.createdBy.name : String(r.createdBy ?? ""),
-    team: typeof r.team === "object" && r.team !== null ? r.team.name : String(r.team ?? ""),
+    createdBy:
+      typeof r.createdBy === "object" && r.createdBy !== null
+        ? r.createdBy.name
+        : String(r.createdBy ?? ""),
+    team:
+      typeof r.team === "object" && r.team !== null
+        ? r.team.name
+        : String(r.team ?? ""),
   };
 }
 
-import { createRecapApi, updateRecapApi, deleteRecapApi } from "@/services/recapsService";
+import {
+  createRecapApi,
+  updateRecapApi,
+  deleteRecapApi,
+} from "@/services/recapsService";
 
 export const useRecapsStore = create<RecapsStoreState>((set, get) => ({
   recapsByDate: {},
   loading: false,
   error: undefined,
   success: undefined,
-  fetchRecaps: async () => {
+  fetchRecaps: async (teamId: string) => {
     set({ loading: true });
     try {
-      const data = await fetchRecapsApi();
+      const data = await fetchRecapsApi(teamId);
       const recaps = data.map(toRecap);
       set({ recapsByDate: groupByDate(recaps), loading: false });
     } catch (err) {
@@ -63,7 +77,14 @@ export const useRecapsStore = create<RecapsStoreState>((set, get) => ({
     set({ loading: true, error: undefined, success: undefined });
     try {
       const recap = await createRecapApi(data);
-      set({ recapsByDate: groupByDate([toRecap(recap), ...Object.values(get().recapsByDate).flat()]), loading: false, success: "Recap created." });
+      set({
+        recapsByDate: groupByDate([
+          toRecap(recap),
+          ...Object.values(get().recapsByDate).flat(),
+        ]),
+        loading: false,
+        success: "Recap created.",
+      });
       showSuccess("Recap created!");
     } catch (err) {
       set({ loading: false, error: "Failed to create recap." });
@@ -79,7 +100,7 @@ export const useRecapsStore = create<RecapsStoreState>((set, get) => ({
       let found = false;
       const newRecapsByDate = Object.fromEntries(
         Object.entries(prev).map(([date, recaps]) => {
-          const updated = recaps.map(r => {
+          const updated = recaps.map((r) => {
             if (r._id === id) {
               found = true;
               return toRecap(recap);
@@ -90,16 +111,27 @@ export const useRecapsStore = create<RecapsStoreState>((set, get) => ({
         })
       );
       // If recap date changed, regroup
-      if (found && toRecap(recap).date && !newRecapsByDate[toRecap(recap).date]?.some(r => r._id === id)) {
+      if (
+        found &&
+        toRecap(recap).date &&
+        !newRecapsByDate[toRecap(recap).date]?.some((r) => r._id === id)
+      ) {
         // Remove from old date
         for (const date in newRecapsByDate) {
-          newRecapsByDate[date] = newRecapsByDate[date].filter(r => r._id !== id);
+          newRecapsByDate[date] = newRecapsByDate[date].filter(
+            (r) => r._id !== id
+          );
         }
         // Add to new date
-        if (!newRecapsByDate[toRecap(recap).date]) newRecapsByDate[toRecap(recap).date] = [];
+        if (!newRecapsByDate[toRecap(recap).date])
+          newRecapsByDate[toRecap(recap).date] = [];
         newRecapsByDate[toRecap(recap).date].push(toRecap(recap));
       }
-      set({ recapsByDate: newRecapsByDate, loading: false, success: "Recap updated." });
+      set({
+        recapsByDate: newRecapsByDate,
+        loading: false,
+        success: "Recap updated.",
+      });
       showSuccess("Recap updated!");
     } catch (err) {
       set({ loading: false, error: "Failed to update recap." });
@@ -112,7 +144,11 @@ export const useRecapsStore = create<RecapsStoreState>((set, get) => ({
       await deleteRecapApi(id);
       const allRecaps = Object.values(get().recapsByDate).flat();
       const filteredRecaps = allRecaps.filter((r) => r._id !== id);
-      set({ recapsByDate: groupByDate(filteredRecaps), loading: false, success: "Recap deleted." });
+      set({
+        recapsByDate: groupByDate(filteredRecaps),
+        loading: false,
+        success: "Recap deleted.",
+      });
       showSuccess("Recap deleted!");
     } catch (err) {
       set({ loading: false, error: "Failed to delete recap." });

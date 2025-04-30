@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { Recap } from "@/types/recap";
 import { api } from "@/services/api";
 import { showSuccess, showError } from "@/lib/toast";
+import { pinsService } from "@/services/pinsService";
 
 interface PinsState {
   pinnedRecaps: Recap[];
@@ -10,6 +11,7 @@ interface PinsState {
   fetchPins: () => Promise<void>;
   pinRecap: (recapId: string) => Promise<void>;
   unpinRecap: (recapId: string) => Promise<void>;
+  reorderPins: (recapIds: string[]) => Promise<void>;
 }
 
 export const usePinsStore = create<PinsState>((set, get) => ({
@@ -49,6 +51,23 @@ export const usePinsStore = create<PinsState>((set, get) => ({
     } catch (error: any) {
       set({ error: error.message, loading: false });
       showError(error.message || "Failed to unpin recap.");
+    }
+  },
+
+  reorderPins: async (recapIds: string[]) => {
+    set({ loading: true, error: null });
+    try {
+      await pinsService.reorderPins(recapIds);
+      // Reorder locally
+      const current = get().pinnedRecaps;
+      const ordered = recapIds
+        .map((id) => current.find((r) => r._id === id))
+        .filter(Boolean) as Recap[];
+      set({ pinnedRecaps: ordered, loading: false });
+      showSuccess("Pin order updated!");
+    } catch (error: any) {
+      set({ error: error.message, loading: false });
+      showError(error.message || "Failed to reorder pins.");
     }
   },
 }));

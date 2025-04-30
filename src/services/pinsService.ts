@@ -1,4 +1,4 @@
-import { Recap } from "@/store/recapsStore";
+import { Recap } from "@/types/recap";
 import { api } from "./api";
 
 export const pinsService = {
@@ -15,5 +15,9 @@ export const pinsService = {
   async unpinRecap(recapId: string): Promise<string[]> {
     const res = await api.delete(`/pins/${recapId}`);
     return res.data.pinnedRecaps;
+  },
+
+  async reorderPins(recapIds: string[]): Promise<void> {
+    await api.post("/pins/reorder", { recapIds });
   },
 };

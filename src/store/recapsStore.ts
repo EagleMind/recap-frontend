@@ -59,7 +59,7 @@ export const useRecapsStore = create<RecapsStoreState>((set, get) => ({
       showError("Failed to fetch recaps.");
     }
   },
-  createRecap: async (data) => {
+  createRecap: async (data: Partial<Recap>) => {
     set({ loading: true, error: undefined, success: undefined });
     try {
       const recap = await createRecapApi(data);

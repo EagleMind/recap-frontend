@@ -4,7 +4,7 @@ export type Recap = {
     description?: string;
     assignedTo: string;
     createdBy: string;
-    team: string;
+    team: { _id: string; name: string } | string;
     createdAt: string;
     updatedAt?: string;
     date: string; // Grouping date (YYYY-MM-DD)

@@ -4,14 +4,41 @@ import { Edit, Trash2, User, Calendar, Pin as PinIcon } from "lucide-react";
 import { usePinsStore } from "@/store/pinsStore";
 import { Button } from "@/components/ui/button";
 import moment from "moment";
-
+import React, { useEffect, useState } from "react";
 
 function formatDate(dateStr: string) {
   return moment(dateStr).format('LLL');
 }
+function blockNoteBlocksToHTML(blocks: any[]): string {
+  if (!Array.isArray(blocks)) return "";
+  return blocks
+    .map((block) => {
+      switch (block.type) {
+        case "paragraph":
+          return `<p>${block.content?.map(inlineToHTML).join("") ?? ""}</p>`;
+        case "heading":
+          const level = block.props?.level || 1;
+          return `<h${level}>${block.content?.map(inlineToHTML).join("") ?? ""}</h${level}>`;
+        case "bulletListItem":
+          return `<ul><li>${block.content?.map(inlineToHTML).join("") ?? ""}</li></ul>`;
+        case "numberedListItem":
+          return `<ol><li>${block.content?.map(inlineToHTML).join("") ?? ""}</li></ol>`;
+        // Add more cases as needed for other block types
+        default:
+          return "";
+      }
+    })
+    .join("");
+}
 
-import React, { useEffect, useState } from "react";
-
+function inlineToHTML(inline: any): string {
+  if (!inline) return "";
+  let text = inline.text || "";
+  if (inline.bold) text = `<strong>${text}</strong>`;
+  if (inline.italic) text = `<em>${text}</em>`;
+  if (inline.underline) text = `<u>${text}</u>`;
+  return text;
+}
 export default function RecapCard({ recap, onEdit, onDelete, onView }: { recap: Recap; onEdit: () => void; onDelete: () => void; onView: () => void }) {
   const { pinRecap, pinnedRecaps } = usePinsStore();
   const isPinned = pinnedRecaps.some((r: Recap) => r._id === recap._id);
@@ -25,7 +52,13 @@ export default function RecapCard({ recap, onEdit, onDelete, onView }: { recap: 
     setTimeout(() => setShowPinned(false), 1000);
   };
 
-
+  let descriptionHtml = "";
+  try {
+    const blocks = recap.description ? JSON.parse(recap.description) : [];
+    descriptionHtml = blockNoteBlocksToHTML(blocks);
+  } catch {
+    descriptionHtml = recap.description || "";
+  }
   useEffect(() => {
     if (!showPinned && pinnedVisible) {
       // Wait for the fade-out transition (300ms), then hide
@@ -102,9 +135,10 @@ export default function RecapCard({ recap, onEdit, onDelete, onView }: { recap: 
             </span>
           </div>
           {recap.description && (
-            <div className="mt-3 text-[15px] text-foreground/80 leading-relaxed">
-              {recap.description}
-            </div>
+            <div
+              className="mt-3 text-[15px] text-foreground/80 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+            />
           )}
         </div>
       </div>

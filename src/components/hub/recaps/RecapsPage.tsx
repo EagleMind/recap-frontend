@@ -130,7 +130,7 @@ export default function RecapsPage() {
               <DialogTitle className="px-6 pt-6 pb-2">Add Recap</DialogTitle>
               <RecapEditPanel
                 mode="create"
-                recap={{ title: '', description: '', assignedTo: '', } as any}
+                recap={{ title: '', description: '', assignedTo: '', team: '', pinned: null } as any}
                 members={members}
                 membersLoading={membersLoading}
                 onSave={async (recap) => {

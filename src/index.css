@@ -81,11 +81,15 @@
 
 
 .hide-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
+
 .hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 @theme inline {
@@ -135,4 +139,29 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  h1 {
+    @apply text-3xl font-bold mt-6 mb-2 leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold mt-5 mb-2 leading-snug;
+  }
+
+  h3 {
+    @apply text-xl font-semibold mt-4 mb-2 leading-snug;
+  }
+
+  h4 {
+    @apply text-lg font-medium mt-4 mb-2;
+  }
+
+  h5 {
+    @apply text-base font-medium mt-3 mb-1;
+  }
+
+  h6 {
+    @apply text-sm font-medium mt-2 mb-1;
+  }
+
 }

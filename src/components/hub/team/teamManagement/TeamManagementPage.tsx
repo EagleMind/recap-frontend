@@ -1,31 +1,55 @@
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeamStore } from "@/store/teamStore";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import type { Team } from "@/types/team";
 import { useState } from "react";
 import { ConfirmDeleteTeamModal } from "./ConfirmDeleteTeamModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { TeamEditForm } from "./TeamEditForm";
+import { useUserStore } from "@/store/userStore";
+import SubscribePlansModal from "./SubscribePlansModal";
 
 export default function TeamManagementPage() {
   const teams = useTeamStore((state) => state.teams);
   const fetchTeams = useTeamStore((state) => state.fetchTeams);
   const deleteTeam = useTeamStore((state) => state.deleteTeam);
+  const user = useUserStore((state) => state.user);
   const error = useTeamStore((state) => state.error);
   const navigate = useNavigate();
+
+  const teamsLimit = user?.plan?.limits?.teams_limit
+    ? parseInt(user.plan.limits.teams_limit)
+    : undefined;
+  const atLimit = teamsLimit !== undefined && teams.length >= teamsLimit;
 
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
   const [loading, setLoading] = useState(false);
-
+  const [modalOpen, setModalOpen] = useState(false);
   React.useEffect(() => {
     fetchTeams();
   }, []);
 
   function handleCreate() {
-    navigate("/hub/team/manage/new");
+    if (atLimit) {
+      setModalOpen(true);
+    } else {
+      navigate("/hub/team/manage/new");
+    }
   }
 
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -67,7 +91,17 @@ export default function TeamManagementPage() {
         <div className="w-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Teams</h2>
-            <Button onClick={handleCreate}>Create New Team</Button>
+            <button
+              className="btn btn-primary"
+              onClick={handleCreate}
+              disabled={user?.subscriptionStatus !== "active"}
+            >
+              New Team
+            </button>
+            <SubscribePlansModal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+            />
           </div>
           <Table>
             <TableHeader>
@@ -83,7 +117,11 @@ export default function TeamManagementPage() {
                   <TableCell>{team.name}</TableCell>
                   <TableCell>{team.description}</TableCell>
                   <TableCell className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEdit(team.teamId)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(team.teamId)}
+                    >
                       Edit
                     </Button>
                     <Button
@@ -125,7 +163,7 @@ export default function TeamManagementPage() {
           setDeleteModalOpen(open);
           if (!open) setTeamToDelete(null);
         }}
-        teamName={teamToDelete?.name || ''}
+        teamName={teamToDelete?.name || ""}
         onConfirm={handleConfirmDelete}
         loading={loading}
       />

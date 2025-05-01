@@ -16,6 +16,10 @@ import { GuestGuard } from "@/guards/GuestGuard";
 import { ForgotPassword } from "@/components/auth/ForgotPassword";
 import { ResetPassword } from "@/components/auth/ResetPassword";
 import AccountPage from "@/components/account/Account";
+import Subscribe from "@/subscribe";
+import VerifyAccount from "@/components/auth/VerifyAccount";
+import SubscribeSuccess from "../subscribe-success";
+import ManageSubscriptionPage from "@/components/hub/ManageSubscriptionPage";
 
 export const router = createBrowserRouter([
   {
@@ -48,7 +52,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="recaps" replace />
+        element: <Navigate to="recaps" replace />,
       },
       {
         path: "team",
@@ -58,17 +62,35 @@ export const router = createBrowserRouter([
             handle: { breadcrumb: "Members" },
             children: [
               { path: "", element: <MembersPage /> },
-              { path: ":memberId/edit", element: <MemberEditPage />, handle: { breadcrumb: <MemberBreadcrumb /> } },
+              {
+                path: ":memberId/edit",
+                element: <MemberEditPage />,
+                handle: { breadcrumb: <MemberBreadcrumb /> },
+              },
             ],
           },
           {
             path: "manage",
             handle: { breadcrumb: "Manage" },
             children: [
-              { path: "", element: <TeamManagementPage />, handle: { breadcrumb: "Teams" } },
-              { path: "new", element: <TeamCreatePage />, handle: { breadcrumb: "New Team" } },
-              { path: ":teamId/edit", element: <TeamEditPage />, handle: { breadcrumb: (match: any) => `Edit ${match.params.teamId}` } },
-            ]
+              {
+                path: "",
+                element: <TeamManagementPage />,
+                handle: { breadcrumb: "Teams" },
+              },
+              {
+                path: "new",
+                element: <TeamCreatePage />,
+                handle: { breadcrumb: "New Team" },
+              },
+              {
+                path: ":teamId/edit",
+                element: <TeamEditPage />,
+                handle: {
+                  breadcrumb: (match: any) => `Edit ${match.params.teamId}`,
+                },
+              },
+            ],
           },
         ],
       },
@@ -77,7 +99,15 @@ export const router = createBrowserRouter([
         element: <RecapsPage />,
         handle: {
           breadcrumb: (
-            <span style={{ color: '#fff', background: '#7c3aed', borderRadius: 6, padding: '2px 10px', fontWeight: 700 }}>
+            <span
+              style={{
+                color: "#fff",
+                background: "#7c3aed",
+                borderRadius: 6,
+                padding: "2px 10px",
+                fontWeight: 700,
+              }}
+            >
               Recaps
             </span>
           ),
@@ -85,8 +115,9 @@ export const router = createBrowserRouter([
       },
       {
         path: "account",
-        element: <AccountPage />, handle: { breadcrumb: "Account" },
-      }
+        element: <AccountPage />,
+        handle: { breadcrumb: "Account" },
+      },
     ],
   },
   {
@@ -127,5 +158,19 @@ export const router = createBrowserRouter([
       </GuestGuard>
     ),
     handle: { breadcrumb: "Reset Password" },
+  },
+  {
+    path: "/subscribe",
+    element: <Subscribe />,
+    handle: { breadcrumb: "Subscribe" },
+  },
+  {
+    path: "/verify-account",
+    element: <VerifyAccount />,
+    handle: { breadcrumb: "Verify Account" },
+  },
+  {
+    path: "/subscribe/success",
+    element: <SubscribeSuccess />,
   },
 ]);

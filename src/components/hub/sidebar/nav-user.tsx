@@ -9,7 +9,6 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +26,9 @@ import {
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { api } from "@/services/api";
 
 export function NavUser({
   user,
@@ -38,6 +40,22 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const { logout } = useAuthStore();
+  const [loadingPortal, setLoadingPortal] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  const handleOpenPortal = async () => {
+    setLoadingPortal(true);
+    setPortalError(null);
+    try {
+      const { data } = await api.post("/stripe/customer-portal");
+      window.location.href = data.url;
+    } catch (err: any) {
+      setPortalError(
+        err.response?.data?.error || "Failed to open customer portal."
+      );
+      setLoadingPortal(false);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -48,7 +66,6 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs">{user.email}</span>
@@ -64,7 +81,6 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
@@ -91,6 +107,25 @@ export function NavUser({
                 <CreditCard />
                 Billing
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleOpenPortal}
+                disabled={loadingPortal}
+              >
+                <CreditCard />
+                {loadingPortal ? (
+                  <span className="flex items-center">
+                    <span className="animate-spin mr-2">⏳</span> Opening
+                    Portal...
+                  </span>
+                ) : (
+                  "Manage Subscription"
+                )}
+              </DropdownMenuItem>
+              {portalError && (
+                <div className="text-red-500 text-xs px-2 py-1">
+                  {portalError}
+                </div>
+              )}
               <DropdownMenuItem>
                 <Bell />
                 Notifications
